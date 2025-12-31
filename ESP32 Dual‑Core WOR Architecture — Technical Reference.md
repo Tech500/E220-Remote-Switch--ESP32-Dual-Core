@@ -217,8 +217,7 @@ flowchart LR
     B --> C
     C --> D
     D --> E
-    E --> F
-	
+    E --> F	
 ```
 
 ---
@@ -332,6 +331,7 @@ whose work made reliable EBYTE module integration possible.
 
 
 ---
+
 
 
 
