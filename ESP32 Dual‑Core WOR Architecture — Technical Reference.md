@@ -173,15 +173,25 @@ Unconditional.
 ## **A. System Flow (Mermaid)**
 
 ```mermaid
-flowchart TD
-    A[Web Request / Countdown] --> B[Core 0: triggerSwitchEvent()]
-    B --> C[xTaskNotifyGive()]
-    C --> D[Core 1: WORTask]
-    D --> E[switchOne()]
-    E --> F[sendPreamble()]
-    F --> G[sendOutgoing()]
-    G --> H[Done]
-```
+flowchart LR
+
+    subgraph Core0["Core 0"]
+        A[WiFi / Web Server]
+        B[triggerSwitchEvent()]
+    end
+
+    subgraph Core1["Core 1"]
+        C[WORTask]
+        D[switchOne()]
+        E[sendPreamble()]
+        F[sendOutgoing()]
+    end
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
 
 ---
 
@@ -315,3 +325,4 @@ whose work made reliable EBYTE module integration possible.
 
 
 ---
+
