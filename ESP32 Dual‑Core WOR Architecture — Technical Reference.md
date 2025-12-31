@@ -182,9 +182,9 @@ flowchart LR
 
     subgraph Core1["Core 1"]
         C[WORTask]
-        D[switchOne()]
-        E[sendPreamble()]
-        F[sendOutgoing()]
+        D["switchOne()"]
+        E["sendPreamble()"]
+        F["sendOutgoing()"]
     end
 
     A --> B
@@ -324,6 +324,7 @@ whose work made reliable EBYTE module integration possible.
 
 
 ---
+
 
 
 
