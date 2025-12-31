@@ -174,7 +174,6 @@ Unconditional.
 ## **A. System Flow (Mermaid)**
 
 ```mermaid
-A. System Flow (Mermaid)
 
 flowchart LR
 
@@ -336,4 +335,5 @@ Special thanks to the open‑source community and the maintainers of the **LoRa_
 whose work made reliable EBYTE module integration possible.
 
 ---
+
 
