@@ -200,12 +200,12 @@ flowchart LR
 flowchart LR
     subgraph Core0[Core 0]
         A[WiFi / Web Server]
-        B[triggerSwitchEvent()]
+        B["triggerSwitchEvent()"]
     end
 
     subgraph Core1[Core 1]
         C[WORTask]
-        D[switchOne()]
+        D["switchOne()"]
         E[sendPreamble]
         F[sendOutgoing]
     end
@@ -324,6 +324,7 @@ whose work made reliable EBYTE module integration possible.
 
 
 ---
+
 
 
 
