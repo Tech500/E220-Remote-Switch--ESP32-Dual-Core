@@ -193,6 +193,8 @@ flowchart LR
     D --> E
     E --> F
 
+---
+
 ## **C. ASCII Flowchart**
 
 ```
