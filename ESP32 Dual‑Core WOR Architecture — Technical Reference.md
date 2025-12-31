@@ -192,36 +192,6 @@ flowchart LR
     C --> D
     D --> E
     E --> F
-	
----
-
----
-
-## **B. Architecture Diagram (Mermaid)**
-
-```mermaid
-flowchart LR
-    subgraph Core0[Core 0]
-        A[WiFi / Web Server]
-        B["triggerSwitchEvent()"]
-    end
-
-    subgraph Core1[Core 1]
-        C[WORTask]
-        D["switchOne()"]
-        E[sendPreamble]
-        F[sendOutgoing]
-    end
-
-    A --> B
-    B --> C
-    C --> D
-    D --> E
-    E --> F	
-
-```
-
----
 
 ## **C. ASCII Flowchart**
 
@@ -332,6 +302,7 @@ whose work made reliable EBYTE module integration possible.
 
 
 ---
+
 
 
 
