@@ -1,63 +1,69 @@
+📄 ESP32 Dual‑Core WOR Architecture — Technical Reference
 
+William Lucid — E220 WOR Transmitter Architecture
 
----
+Table of Contents
 
-# 📄 **ESP32 Dual‑Core WOR Architecture — Technical Reference**  
-### *William Lucid — E220 WOR Transmitter Architecture*
+Introduction
 
----
+ESP32 Dual‑Core Model
 
-## **Table of Contents**
-- **[Introduction](guide://action?prefill=Tell%20me%20more%20about%3A%20Introduction)**
-- **[ESP32 Dual‑Core Model](guide://action?prefill=Tell%20me%20more%20about%3A%20ESP32%20Dual%E2%80%91Core%20Model)**
-- **[Core Assignment Strategy](guide://action?prefill=Tell%20me%20more%20about%3A%20Core%20Assignment%20Strategy)**
-- **[Task Creation & Scheduling](guide://action?prefill=Tell%20me%20more%20about%3A%20Task%20Creation%20%26%20Scheduling)**
-- **[Task Notifications](guide://action?prefill=Tell%20me%20more%20about%3A%20Task%20Notifications)**
-- **[Interrupt Handling](guide://action?prefill=Tell%20me%20more%20about%3A%20Interrupt%20Handling)**
-- **[Critical Sections](guide://action?prefill=Tell%20me%20more%20about%3A%20Critical%20Sections)**
-- **[Deep Sleep Integration](guide://action?prefill=Tell%20me%20more%20about%3A%20Deep%20Sleep%20Integration)**
-- **[WOR Radio Pipeline](guide://action?prefill=Tell%20me%20more%20about%3A%20WOR%20Radio%20Pipeline)**
-- **[Flowcharts](guide://action?prefill=Tell%20me%20more%20about%3A%20Flowcharts)**
-- **[Glossary](guide://action?prefill=Tell%20me%20more%20about%3A%20Glossary)**
-- **[Appendix: Code Snippets](guide://action?prefill=Tell%20me%20more%20about%3A%20Appendix%3A%20Code%20Snippets)**
+Core Assignment Strategy
 
----
+Task Creation & Scheduling
 
-# 1. **Introduction**
+Task Notifications
 
-This document describes the **dual‑core architecture** used in the ESP32 E220 WOR Remote Switch Transmitter. It explains how Core 0 and Core 1 cooperate to deliver deterministic radio timing, non‑blocking WiFi, and instant AUX‑driven wakeups.
+Interrupt Handling
 
----
+Critical Sections
 
-# 2. **ESP32 Dual‑Core Model**
+Deep Sleep Integration
+
+WOR Radio Pipeline
+
+Flowcharts
+
+Glossary
+
+Appendix: Code Snippets
+
+1. Introduction
+
+This document describes the dual‑core architecture used in the ESP32 E220 WOR Remote Switch Transmitter. It explains how Core 0 and Core 1 cooperate to deliver deterministic radio timing, non‑blocking WiFi, and instant AUX‑driven wakeups.
+
+2. ESP32 Dual‑Core Model
 
 The ESP32 contains two independent CPU cores:
 
-- **Core 0** → WiFi, TCP/IP, system tasks  
-- **Core 1** → Application logic (WOR radio task)
+Core 0 → WiFi, TCP/IP, system tasks
+
+Core 1 → Application logic (WOR radio task)
 
 FreeRTOS runs across both cores and provides the primitives used in this architecture.
 
----
+3. Core Assignment Strategy
 
-# 3. **Core Assignment Strategy**
+Core
 
-| Core | Responsibilities |
-|------|------------------|
-| **Core 0** | WiFi, web server, HTTP handlers, triggerSwitchEvent() |
-| **Core 1** | WORTask, switchOne(), sendPreamble(), sendOutgoing() |
+Responsibilities
+
+Core 0
+
+WiFi, web server, HTTP handlers, triggerSwitchEvent()
+
+Core 1
+
+WORTask, switchOne(), sendPreamble(), sendOutgoing()
 
 This separation prevents WiFi starvation and ensures deterministic radio behavior.
 
----
+4. Task Creation & Scheduling
 
-# 4. **Task Creation & Scheduling**
-
-### **xTaskCreatePinnedToCore()**
+xTaskCreatePinnedToCore()
 
 Creates a FreeRTOS task pinned to a specific core.
 
-```cpp
 xTaskCreatePinnedToCore(
     WORTask,
     "WORTask",
@@ -67,108 +73,87 @@ xTaskCreatePinnedToCore(
     &worTaskHandle,
     1
 );
-```
 
-**Purpose:**  
-Guarantees WOR logic always runs on Core 1.
+Purpose:Guarantees WOR logic always runs on Core 1.
 
----
+5. Task Notifications
 
-# 5. **Task Notifications**
-
-### **xTaskNotifyGive()**
+xTaskNotifyGive()
 
 Wakes a task from another task.
 
-```cpp
 xTaskNotifyGive(worTaskHandle);
-```
 
-### **vTaskNotifyGiveFromISR()**
+vTaskNotifyGiveFromISR()
 
 ISR‑safe version.
 
-```cpp
 vTaskNotifyGiveFromISR(worTaskHandle, &xHigherPriorityTaskWoken);
-```
 
-### **ulTaskNotifyTake()**
+ulTaskNotifyTake()
 
 Waits for a notification.
 
-```cpp
 ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-```
 
-**Purpose:**  
-Replaces all AUX polling loops.
+Purpose:Replaces all AUX polling loops.
 
----
+6. Interrupt Handling
 
-# 6. **Interrupt Handling**
+attachInterrupt()
 
-### **attachInterrupt()**
-
-```cpp
 attachInterrupt(digitalPinToInterrupt(AUX_PIN), auxISR, FALLING);
-```
 
-**Why FALLING?**  
-E220 AUX goes LOW when:
+Why FALLING?E220 AUX goes LOW when:
 
-- TX completes  
-- Module becomes idle  
-- WOR preamble is received  
+TX completes
 
----
+Module becomes idle
 
-# 7. **Critical Sections**
+WOR preamble is received
+
+7. Critical Sections
 
 Used to safely share data between cores.
 
-```cpp
 portENTER_CRITICAL(&mux);
 switchFlag = true;
 switchData = 1;
 portEXIT_CRITICAL(&mux);
-```
 
----
+8. Deep Sleep Integration
 
-# 8. **Deep Sleep Integration**
-
-### **esp_sleep_enable_ext0_wakeup()**
+esp_sleep_enable_ext0_wakeup()
 
 Wake on AUX LOW.
 
-### **gpio_hold_en()**
+gpio_hold_en()
 
 Retains pin state during deep sleep.
 
-### **esp_deep_sleep_start()**
+esp_deep_sleep_start()
 
 Enters deep sleep.
 
----
+9. WOR Radio Pipeline
 
-# 9. **WOR Radio Pipeline**
-
-```
 switchFlag set → WORTask wakes → switchOne() → sendPreamble() → sendOutgoing()
-```
 
-### **switchFlag**  
+switchFlag
+
 Consumed only once in switchOne().
 
-### **sendPreamble()**  
+sendPreamble()
+
 Unconditional.
 
-### **sendOutgoing()**  
+sendOutgoing()
+
 Unconditional.
 
----
+10. Flowcharts
 
-# 10. **Flowcharts**
+A. System Flow (Mermaid)
 
 flowchart LR
 
@@ -190,6 +175,8 @@ flowchart LR
     D --> E
     E --> F
 
+B. Architecture Diagram (Mermaid)
+
 flowchart LR
 
     subgraph Core0["Core 0"]
@@ -210,37 +197,78 @@ flowchart LR
     D --> E
     E --> F
 
+C. ASCII Flowchart
 
-# 11. **Glossary**
+[Web Request]
+      |
+      v
+[triggerSwitchEvent()]
+      |
+      v
+[xTaskNotifyGive]
+      |
+      v
+[Core 1: WORTask]
+      |
+      v
+[switchOne()]
+      |
+      v
+[sendPreamble()]
+      |
+      v
+[sendOutgoing()]
 
-| Term | Meaning |
-|------|---------|
-| **WOR** | Wake‑On‑Radio |
-| **AUX** | E220 status pin |
-| **ISR** | Interrupt Service Routine |
-| **Core 0** | WiFi + system core |
-| **Core 1** | Application core |
-| **Task Notification** | Lightweight inter‑task signal |
-| **Critical Section** | Atomic access region |
-| **Deep Sleep** | Ultra‑low power mode |
+11. Glossary
 
----
+Term
 
-# 12. **Appendix: Key Code Snippets**
+Meaning
 
-## **AUX ISR**
+WOR
 
-```cpp
+Wake‑On‑Radio
+
+AUX
+
+E220 status pin
+
+ISR
+
+Interrupt Service Routine
+
+Core 0
+
+WiFi + system core
+
+Core 1
+
+Application core
+
+Task Notification
+
+Lightweight inter‑task signal
+
+Critical Section
+
+Atomic access region
+
+Deep Sleep
+
+Ultra‑low power mode
+
+12. Appendix: Key Code Snippets
+
+AUX ISR
+
 void IRAM_ATTR auxISR() {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     vTaskNotifyGiveFromISR(worTaskHandle, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
-```
 
-## **WOR Task**
+WOR Task
 
-```cpp
 void WORTask(void *pvParameters) {
     for (;;) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -259,11 +287,9 @@ void WORTask(void *pvParameters) {
         vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
-```
 
-## **Event Trigger**
+Event Trigger
 
-```cpp
 void triggerSwitchEvent(int value) {
     portENTER_CRITICAL(&mux);
     switchData = value;
@@ -272,37 +298,3 @@ void triggerSwitchEvent(int value) {
 
     xTaskNotifyGive(worTaskHandle);
 }
-```
-
----
-
-# 👥 Contributors
-
-### **Primary Developer**
-**William Lucid**  
-Lead architect, embedded systems developer, and creator of the E220 WOR Remote Switch Transmitter.  
-Responsible for system design, implementation, testing, and integration of all hardware and firmware components.
-
-### **AI Engineering Assistance**
-**Microsoft Copilot**  
-Provided architectural guidance, dual‑core FreeRTOS design patterns, interrupt‑driven WOR pipeline,  
-code refactoring support, and technical documentation including flowcharts, diagrams, and PDF‑ready materials.
-
-### **Acknowledgments**
-Special thanks to the open‑source community and the maintainers of the **LoRa_E220** library,  
-whose work made reliable EBYTE module integration possible.
-
-
----
-
-
-
-
-
-
-
-
-
-
-
-
