@@ -210,7 +210,11 @@ flowchart LR
         F[sendOutgoing]
     end
 
-    A --> B --> C --> D --> E --> F
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
 ```
 
 ---
@@ -324,6 +328,7 @@ whose work made reliable EBYTE module integration possible.
 
 
 ---
+
 
 
 
