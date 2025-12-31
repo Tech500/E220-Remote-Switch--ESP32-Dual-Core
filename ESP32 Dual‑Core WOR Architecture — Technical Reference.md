@@ -3,7 +3,6 @@
 ---
 
 # 📄 **ESP32 Dual‑Core WOR Architecture — Technical Reference**  
-### *PDF‑Ready Markdown Document*  
 ### *William Lucid — E220 WOR Transmitter Architecture*
 
 ---
@@ -313,5 +312,6 @@ code refactoring support, and technical documentation including flowcharts, diag
 ### **Acknowledgments**
 Special thanks to the open‑source community and the maintainers of the **LoRa_E220** library,  
 whose work made reliable EBYTE module integration possible.
+
 
 ---
