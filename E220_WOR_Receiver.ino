@@ -1,6 +1,19 @@
 /*
- * "E220_WOR_Remote_Switch_Receiver_FINAL.ino"
- * Expertly tuned for Dual-Core FreeRTOS with Deep Sleep & KY002S Latch
+ * "E220_WOR_Transmitter_Gemini.ino"
+ *  Expertly tuned for Dual-Core FreeRTOS with Deep Sleep & KY002S Latch
+ *  01/09/2026 @ 06:02 EST  Arduino IDE 2.3.7   ESP32 Board Manager 3.3.5
+ * 
+ *   William Lucid and Team, AI: Copilot, Claude, and Gemini
+ * 
+ *   Microsoft Copilot's Dual-core refactor:
+ *   ---------------------------------------
+ *  - WiFi + web server on Core 0  
+ *  - WOR / radio logic on Core 1
+ *  - AUX interrupt (FALLING) -> task notification (no polling)
+ *  - switchFlag consumed only in switchOne()
+ *  - sendPreamble() and sendOutgoing() run unconditionally
+ *  - No blocking loops on Core 0 (WiFi stays healthy)
+ *
  */
 
 #include <Arduino.h>
